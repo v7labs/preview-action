@@ -6,6 +6,11 @@ env:
 on:
   workflow_call:
     inputs:
+      runner-type:
+        description: "Runner type"
+        default: "ubuntu-22.04"
+        required: false
+        type: string
       compose-file-cache-key:
         description: "GHA Cache Key for Docker Compose file ready to deploy"
         required: true
@@ -30,32 +35,32 @@ on:
         type: string
       pr-number:
         description: "GitHub Pull Request Number"
-        default: ''
+        default: ""
         required: false
         type: string
       git-ref:
         description: "Branch or other git reference to checkout"
-        default: ''
+        default: ""
         required: false
         type: string
       healthcheck-url-path:
         description: "URL Path to the Uffizzi Preview URL where healthcheck would be performed. The URL Path has to start with a '/'."
-        default: ''
+        default: ""
         required: false
         type: string
       description:
         description: "Text string added to comment on pull request issue"
-        default: 'What is Uffizzi? [Learn more](https://www.uffizzi.com)!'
+        default: "What is Uffizzi? [Learn more](https://www.uffizzi.com)!"
         required: false
         type: string
       environment:
-        description: 'Custom environment for the deployed preview'
-        default: 'uffizzi'
+        description: "Custom environment for the deployed preview"
+        default: "uffizzi"
         required: false
         type: string
     secrets:
       access-token:
-        description: 'Github pipeline token'
+        description: "Github pipeline token"
         required: false
       password:
         description: "Uffizzi password for login"
@@ -70,42 +75,42 @@ on:
         description: "GitHub personal access token with access to container registry"
         required: false
       dockerhub-username:
-        description: 'DockerHub username'
+        description: "DockerHub username"
         required: false
       dockerhub-password:
-        description: 'DockerHub password'
+        description: "DockerHub password"
         required: false
       acr-username:
-        description: 'Azure username'
+        description: "Azure username"
         required: false
       acr-password:
-        description: 'Azure password'
+        description: "Azure password"
         required: false
       acr-registry-url:
-        description: 'Azure registry url'
+        description: "Azure registry url"
         required: false
       aws-access-key-id:
-        description: 'Amazon Web Services access key id'
+        description: "Amazon Web Services access key id"
         required: false
       aws-secret-access-key:
-        description: 'Amazon Web Services secret access key'
+        description: "Amazon Web Services secret access key"
         required: false
       aws-registry-url:
-        description: 'Amazon Web Services registry url'
+        description: "Amazon Web Services registry url"
         required: false
       gcloud-service-key:
-        description: 'Google Cloud service key'
+        description: "Google Cloud service key"
         required: false
       docker-registry-username:
-        description: 'Custom docker registry username'
+        description: "Custom docker registry username"
         required: false
       docker-registry-password:
-        description: 'Custom docker registry password'
+        description: "Custom docker registry password"
         required: false
       docker-registry-url:
-        description: 'Custom docker registry url'
+        description: "Custom docker registry url"
         required: false
-  
+
     outputs:
       url:
         description: "URL to Uffizzi Preview Environment"
@@ -114,7 +119,7 @@ on:
         description: "Uffizzi Preview Deployment ID"
         value: ${{ jobs.uffizzi-preview.outputs.id }}
       containers_uri:
-        description: 'URL to Uffizzi Deployment Details'
+        description: "URL to Uffizzi Deployment Details"
         value: ${{ jobs.uffizzi-preview.outputs.containers_uri }}
       expiration_interval:
         description: "Uffizzi Preview Expiration Interval in Seconds"
@@ -134,7 +139,7 @@ permissions:
 jobs:
   uffizzi-preview:
     name: "Create, Update, or Delete Preview on Uffizzi"
-    runs-on: ubuntu-22.04
+    runs-on: ${{ inputs.runner-type }}
     environment:
       name: ${{ inputs.environment }}
       url: "${{ steps.outputs.outputs.url }}"
@@ -195,8 +200,8 @@ jobs:
         id: find-comment
         with:
           issue-number: ${{ env.PR_NUMBER }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '${{ env.EXPECTED_URL }}'
+          comment-author: "github-actions[bot]"
+          body-includes: "${{ env.EXPECTED_URL }}"
           direction: last
 
       - name: Determine Operation
@@ -265,7 +270,7 @@ jobs:
       - name: Fetch cached Compose File
         id: cache
         if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ inputs.compose-file-cache-path }}
           key: ${{ inputs.compose-file-cache-key }}
